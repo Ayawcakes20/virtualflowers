@@ -16,8 +16,10 @@ export function FlowerLeaves({ reduced }: { reduced: boolean }) {
       <motion.g initial={reduced ? false : { scaleX: .02, scaleY: .2, rotate: 23 }} animate={{ scaleX: 1, scaleY: 1, rotate: 0 }}
         style={{ originX: 0, originY: 0, transformBox: "view-box" }}
         transition={{ duration: reduced ? 0 : .8 * surprise.timing.growthSpeed, delay: reduced ? 0 : (1.35 + i * .095) * surprise.timing.growthSpeed }}>
+        <g className="leaf-breeze" style={{ animationDelay: `${(6.65 + i * .2) * surprise.timing.growthSpeed}s` }}>
         <path d="M0 0 C-30 -12 -30 -47 -7 -68 C14 -48 30 -14 0 0Z" fill={i % 2 === 0 ? "url(#leaf-green)" : "#729460"} stroke="#5D8054" strokeWidth="1" />
         <path d="M0 -2 Q-8 -31 -7 -60 M-5 -27 L-18 -39 M-7 -39 L3 -49 M-2 -15 L9 -30" stroke="#BDCE96" strokeWidth="1" fill="none" />
+        </g>
       </motion.g>
     </g>
   ))}</g>;

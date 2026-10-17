@@ -5,7 +5,10 @@ import { motion } from "motion/react";
 import { surprise } from "@/config/surprise";
 import { Heart } from "./Ornaments";
 
-export function LoveLetter({ onClose, onReplay, reduced }: { onClose: () => void; onReplay: () => void; reduced: boolean }) {
+// Envelope center relative to the viewport center, captured on interaction.
+export type LetterOrigin = { x: number; y: number };
+
+export function LoveLetter({ onClose, onReplay, reduced, origin }: { onClose: () => void; onReplay: () => void; reduced: boolean; origin: LetterOrigin }) {
   const ref = useRef<HTMLDialogElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -19,8 +22,11 @@ export function LoveLetter({ onClose, onReplay, reduced }: { onClose: () => void
 
   return <dialog className="letter-dialog" ref={ref} aria-labelledby="letter-title" onCancel={event => { event.preventDefault(); onClose(); }}
     onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
-    <motion.article className="letter-paper" initial={{ opacity: 0, y: reduced ? 0 : 40, scaleY: reduced ? 1 : .72 }} animate={{ opacity: 1, y: 0, scaleY: 1 }}
-      transition={{ duration: reduced ? .15 : .65, ease: [.22,.7,.3,1] }} style={{ transformOrigin: "50% 100%" }}>
+    <motion.article className="letter-paper"
+      initial={{ opacity: reduced ? 0 : .6, x: reduced ? 0 : origin.x, y: reduced ? 0 : origin.y, scaleX: reduced ? 1 : .2, scaleY: reduced ? 1 : .1, rotateX: reduced ? 0 : -18 }}
+      animate={{ opacity: 1, x: 0, y: 0, scaleX: 1, scaleY: 1, rotateX: 0 }}
+      transition={{ duration: reduced ? .1 : surprise.timing.letterUnfold, ease: [.2,.72,.25,1] }} style={{ transformOrigin: "50% 50%", transformPerspective: 1200 }}>
+      <div className="paper-fold fold-one" aria-hidden="true" /><div className="paper-fold fold-two" aria-hidden="true" />
       <button className="letter-x" aria-label="Close letter" type="button" onClick={onClose}>×</button>
       <div className="letter-top-heart"><Heart /></div>
       <p className="eyebrow">{surprise.letter.eyebrow}</p>

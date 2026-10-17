@@ -5,7 +5,7 @@ import { AnimatePresence, MotionConfig, useReducedMotion } from "motion/react";
 import { surprise } from "@/config/surprise";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { SurpriseScene } from "./SurpriseScene";
-import { LoveLetter } from "./LoveLetter";
+import { LoveLetter, type LetterOrigin } from "./LoveLetter";
 import { Heart, PageOrnaments, Sparkle } from "./Ornaments";
 
 const theme = Object.fromEntries(Object.entries(surprise.theme).map(([key, value]) => [`--${key}`, value])) as CSSProperties;
@@ -16,7 +16,7 @@ const serverSnapshot = () => false;
 export function SurpriseExperience() {
   const [scene, setScene] = useState<"welcome" | "surprise">("welcome");
   const [opening, setOpening] = useState(false);
-  const [letter, setLetter] = useState(false);
+  const [letter, setLetter] = useState<LetterOrigin | null>(null);
   const [replayed, setReplayed] = useState(false);
   const [envelopeVersion, setEnvelopeVersion] = useState(0);
   const [hidden, setHidden] = useState(false);
@@ -33,7 +33,7 @@ export function SurpriseExperience() {
   }, []);
 
   function replay() {
-    setLetter(false);
+    setLetter(null);
     setOpening(false);
     setReplayed(true);
     setScene("welcome");
@@ -41,24 +41,24 @@ export function SurpriseExperience() {
   }
 
   function closeLetter() {
-    setLetter(false);
+    setLetter(null);
     setEnvelopeVersion(v => v + 1);
     // The envelope remount resets the folding state before keyboard focus returns.
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>("[data-testid='open-letter']")?.focus({ preventScroll: true }));
   }
 
   return <MotionConfig reducedMotion="user">
-    <div className={`experience ${scene === "surprise" ? "experience-revealed" : ""}`} style={theme} data-paused={hidden || letter}>
-      <PageOrnaments />
+    <div className={`experience ${scene === "surprise" ? "experience-revealed" : ""}`} style={theme} data-paused={hidden || !!letter}>
+      <PageOrnaments revealed={scene === "surprise"} />
       <header className="site-header"><div className="wordmark"><Sparkle /><span>a little sunshine<span className="wordmark-dot">.</span></span></div><span className="header-note">a little love, from {surprise.from}<Heart /></span></header>
       <main id="main-content">
         <AnimatePresence mode="wait" initial={false}>
           {scene === "welcome" ? <WelcomeScreen key="welcome" reduced={reduced} opening={opening || !hydrated} replayed={replayed} onOpen={() => { if (!opening && hydrated) { setOpening(true); setScene("surprise"); } }} />
-            : <SurpriseScene key="surprise" reduced={reduced} onOpenLetter={() => setLetter(true)} onReplay={replay} envelopeVersion={envelopeVersion} />}
+            : <SurpriseScene key="surprise" reduced={reduced} onOpenLetter={setLetter} onReplay={replay} envelopeVersion={envelopeVersion} />}
         </AnimatePresence>
       </main>
       <footer className="site-footer"><Heart /><span>{surprise.closingMessage}</span></footer>
-      {letter && <LoveLetter reduced={reduced} onClose={closeLetter} onReplay={replay} />}
+      {letter && <LoveLetter reduced={reduced} origin={letter} onClose={closeLetter} onReplay={replay} />}
       <noscript><div className="noscript-note">Please enable JavaScript to open your little surprise. 💜</div></noscript>
     </div>
   </MotionConfig>;

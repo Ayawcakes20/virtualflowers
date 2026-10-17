@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 
 const sizes = [
   { name: "375", width: 375, height: 812 },
@@ -19,7 +19,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },
-  projects: ["chromium", "webkit"].flatMap(engine => sizes.map(size => ({
+  projects: [...["chromium", "webkit"].flatMap(engine => sizes.map(size => ({
     name: `${engine}-${size.name}`,
     use: {
       browserName: engine as "chromium" | "webkit",
@@ -28,6 +28,9 @@ export default defineConfig({
       hasTouch: size.name !== "desktop",
     },
   }))),
+  { name: "android-pixel", use: { ...devices["Pixel 7"], browserName: "chromium", channel: "chrome", deviceScaleFactor: 2 } },
+  { name: "ios-iphone", use: { ...devices["iPhone 13"], browserName: "webkit", deviceScaleFactor: 2 } },
+  ],
   webServer: {
     command: "npm run dev",
     url: "http://localhost:3000",

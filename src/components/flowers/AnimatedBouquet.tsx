@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, type CSSProperties } from "react";
 import { motion } from "motion/react";
 import { surprise } from "@/config/surprise";
 import { AnimatedSunflower, type Flower } from "./AnimatedSunflower";
@@ -28,7 +28,7 @@ const smallFlowers = [
 export const bouquetFinishedAt = Math.max(...sunflowers.map(f => f.delay + .15 + 16 * .018 + surprise.timing.petalDuration), 6.65) * surprise.timing.growthSpeed;
 
 export const AnimatedBouquet = memo(function AnimatedBouquet({ reduced, onBloomComplete }: { reduced: boolean; onBloomComplete: () => void }) {
-  return <g data-testid="bouquet" className="bouquet-sway">
+  return <g data-testid="bouquet" className="bouquet-sway" style={{ "--bloom-end": `${bouquetFinishedAt}s` } as CSSProperties}>
     <BouquetWrapper reduced={reduced} back />
     {sunflowers.map((flower, i) => <FlowerStem key={i} flower={flower} reduced={reduced} />)}
     {smallFlowers.map(([x, y], i) => <motion.path key={i} d={`M302 429 Q${x} 330 ${x} ${y}`} fill="none" stroke="#79996C" strokeWidth="2"
@@ -67,5 +67,6 @@ export function BouquetGradients() {
     <linearGradient id="wrapper-lavender" x1="0" x2="1" y2=".5"><stop stopColor="var(--lavender)" /><stop offset=".5" stopColor="var(--lilac)" /><stop offset="1" stopColor="var(--violet)" /></linearGradient>
     <radialGradient id="teddy-fur" cx=".35" cy=".25"><stop stopColor="#C99D70" /><stop offset="1" stopColor="#A77850" /></radialGradient>
     <linearGradient id="sky" x2=".2" y2="1"><stop stopColor="var(--lavender)" /><stop offset="1" stopColor="#F8F4F5" /></linearGradient>
+    <radialGradient id="scene-light"><stop stopColor="#FFF4CF" stopOpacity=".8" /><stop offset=".65" stopColor="#FFF5E5" stopOpacity=".3" /><stop offset="1" stopColor="#F8E8FF" stopOpacity="0" /></radialGradient>
   </defs>;
 }

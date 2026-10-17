@@ -7,8 +7,8 @@ export const surprise = {
   welcome: {
     greeting: "Hi love! 💜",
     headline: ["A little sunshine,", "just for you."],
-    message: "I made a little something special just for you.",
-    button: "Open Your Surprise 💜",
+    message: "I made something special just for you.",
+    button: "Open My Surprise 💜",
     footnote: "A tiny surprise. A whole lot of love.",
   },
   scene: {
@@ -16,7 +16,7 @@ export const surprise = {
     subtitle: "A little sunshine, wrapped in all my love.",
     growing: "Growing a little happiness for you…",
     ready: "Every little bloom, a little reminder of my love.",
-    letterButton: "Open My Letter 💌",
+    letterButton: "Read My Letter 💌",
   },
   letter: {
     eyebrow: "A LITTLE NOTE, JUST FOR YOU",
@@ -40,15 +40,17 @@ export const surprise = {
     green: "#A8CFA5",
   },
   timing: {
-    // Scales the complete SVG choreography. 1 = about 7 seconds.
-    growthSpeed: 1,
-    transition: 0.45,
+    // Scales the complete SVG choreography. 0.66 = about 4.4 seconds.
+    growthSpeed: 0.66,
+    transition: 0.5,
     wrapper: 0.15,
     stemDuration: 1.15,
     petalDuration: 1.25,
     teddy: 3.5,
     popcorn: 4.1,
-    envelopeFold: 0.55,
-    paperLift: 0.5,
+    envelopeForward: 0.14,
+    envelopeFold: 0.34,
+    paperLift: 0.3,
+    letterUnfold: 0.46,
   },
 } as const;

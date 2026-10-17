@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { surprise } from "@/config/surprise";
 
 export function AnimatedSun() {
   return <g transform="translate(78 86)">
@@ -23,16 +24,16 @@ export function FloatingClouds() {
 export function FloatingPetals({ reduced }: { reduced: boolean }) {
   return <g>{[[95,315,-20],[493,344,30],[457,168,15],[135,149,-25]].map(([x,y,r],i)=><g key={i} transform={`translate(${x} ${y}) rotate(${r})`}>
     <path className={reduced ? "" : "drifting-petal"} d="M0 0 Q-18 -18 -5 -30 Q17 -19 0 0Z" fill={i%2 ? "#C5ACDE" : "#E9C263"} opacity={reduced ? .6 : 0}
-      style={{ animationDuration: `${12+i}s`, animationDelay: `${5+i*1.7}s` } as CSSProperties} />
+      style={{ animationDuration: `${9+i}s`, animationDelay: `${4.6*surprise.timing.growthSpeed+i*.7}s` } as CSSProperties} />
   </g>)}</g>;
 }
 
 export function Grass() {
   return <g>
-    <path d="M0 530 Q148 493 300 521 Q470 500 600 530 V590 H0Z" fill="#DFE7C7" />
-    <path d="M0 555 Q143 520 298 546 Q450 520 600 547 V590 H0Z" fill="var(--green)" />
-    {Array.from({length:42},(_,i)=>{
-      const x=i*15-8, y=549+(i%5)*3;
+    <path d="M-100 530 Q148 493 300 521 Q470 500 700 530 V590 H-100Z" fill="#DFE7C7" />
+    <path d="M-100 555 Q143 520 298 546 Q450 520 700 547 V590 H-100Z" fill="var(--green)" />
+    {Array.from({length:56},(_,i)=>{
+      const x=i*15-108, y=549+(i%5)*3;
       return <path key={i} d={`M${x} 590 Q${x-15} ${y-12} ${x+2} ${y} Q${x+8} ${y-25} ${x+14} ${y+1} Q${x+27} ${y-14} ${x+29} 590Z`} fill={i%3===0 ? "#A8C294" : i%3===1 ? "#B3CBA0" : "#BED1A8"} />;
     })}
     {[[58,555],[183,570],[422,555],[539,575]].map(([x,y],i)=><g key={i} transform={`translate(${x} ${y})`}>

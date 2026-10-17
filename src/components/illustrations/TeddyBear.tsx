@@ -4,11 +4,11 @@ import { motion } from "motion/react";
 import { surprise } from "@/config/surprise";
 
 export function TeddyBear({ reduced }: { reduced: boolean }) {
-  return <g transform="translate(464 442) rotate(6)" data-testid="teddy-bear">
+  return <g transform="translate(472 431) rotate(6) scale(1.16)" data-testid="teddy-bear">
     <motion.g initial={reduced ? false : { y: 70, opacity: 0, rotate: 12 }} animate={{ y: 0, opacity: 1, rotate: 0 }}
       transition={{ type: "spring", bounce: .35, duration: reduced ? 0 : 1.1, delay: reduced ? 0 : surprise.timing.teddy * surprise.timing.growthSpeed }}>
       <ellipse cy="66" rx="60" ry="8" fill="#6F7B52" opacity=".1" />
-      <g className="teddy-breathe">
+      <g className="teddy-bob"><g className="teddy-breathe">
         <ellipse cy="24" rx="37" ry="43" fill="url(#teddy-fur)" stroke="#926444" strokeWidth="1.4" />
         <ellipse cy="29" rx="24" ry="29" fill="#D9B58C" />
         <ellipse cx="-31" cy="-43" rx="17" ry="18" fill="#B98A5F" stroke="#956A4C" strokeWidth="1.2" />
@@ -18,9 +18,11 @@ export function TeddyBear({ reduced }: { reduced: boolean }) {
         <path d="M-42 -13 C-43 -58 42 -60 43 -12 C46 28 -42 30 -42 -13Z" fill="url(#teddy-fur)" stroke="#9E704D" strokeWidth="1.2" />
         <path d="M-25 -35 Q-10 -48 4 -43 M-23 -32 L-19 -35 M9 -43 L14 -41" stroke="#E0BB8E" strokeWidth="2" fill="none" strokeLinecap="round" />
         <ellipse cy="3" rx="20" ry="15" fill="#E7CCAA" />
+        <g className="teddy-eyes">
         <ellipse cx="-15" cy="-14" rx="3.3" ry="4.2" fill="#3F2B25" />
         <ellipse cx="15" cy="-14" rx="3.3" ry="4.2" fill="#3F2B25" />
         <circle cx="-16" cy="-15.5" r="1" fill="white" /><circle cx="14" cy="-15.5" r="1" fill="white" />
+        </g>
         <ellipse cx="-27" cy="-2" rx="6.5" ry="3" fill="#C9877B" opacity=".5" />
         <ellipse cx="27" cy="-2" rx="6.5" ry="3" fill="#C9877B" opacity=".5" />
         <path d="M-7 -2 Q0 -7 7 -2 Q6 5 0 5 Q-6 5 -7 -2" fill="#573A30" />
@@ -39,7 +41,7 @@ export function TeddyBear({ reduced }: { reduced: boolean }) {
         <path d="M-6 29 L-19 55 L-7 50 L-2 55 L5 30 L16 52 L25 46 L11 27" fill="#AD8DC4" />
         <circle cy="26" r="6" fill="#9F7AB6" />
         {[[-22,19],[-21,29],[20,20],[20,30],[-10,45],[16,43]].map(([x,y],i)=><circle key={i} cx={x} cy={y} r="1.3" fill="#F8F1FC" />)}
-      </g>
+      </g></g>
     </motion.g>
   </g>;
 }

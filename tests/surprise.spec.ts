@@ -11,13 +11,19 @@ test("surprise stays hidden, genuinely blooms, and opens a replayable letter", a
   const response = await page.goto("/");
   expect(response?.status()).toBe(200);
   await page.evaluate(() => document.fonts.ready);
-  const open = page.getByRole("button", { name: "Open Your Surprise" });
+  const open = page.getByRole("button", { name: "Open My Surprise" });
   await expect(open).toBeVisible();
   await expect(open).toBeEnabled();
   await expect(page.getByTestId("bouquet")).toHaveCount(0);
   await expect(page.locator("[data-petal]")).toHaveCount(0);
   await expect(page.getByTestId("open-letter")).toHaveCount(0);
   await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.locator(".ambient-cloud")).toHaveCount(4);
+  const cloud = page.locator(".ambient-cloud").first();
+  const before = await cloud.evaluate(el => getComputedStyle(el).transform);
+  await expect.poll(() => cloud.evaluate(el => getComputedStyle(el).transform)).not.toBe(before);
+  expect(await page.locator(".ambient-twinkle").first().evaluate(el => getComputedStyle(el).animationName)).toBe("twinkle");
+  await expect(page.locator(".butterfly")).toHaveCount(0);
   await noHorizontalOverflow(page);
   const button = await open.boundingBox();
   expect(button!.height).toBeGreaterThanOrEqual(44);
@@ -26,6 +32,7 @@ test("surprise stays hidden, genuinely blooms, and opens a replayable letter", a
 
   // Keyboard activation exercises the same native button as touch.
   await open.focus();
+  const revealStart = Date.now();
   await page.keyboard.press("Enter");
   await expect(page.getByTestId("surprise-scene")).toBeVisible();
   await expect(page.getByTestId("surprise-scene")).toHaveCount(1);
@@ -36,6 +43,8 @@ test("surprise stays hidden, genuinely blooms, and opens a replayable letter", a
   await expect.poll(() => firstPetal.getAttribute("d")).not.toBe(closedGeometry);
   await page.screenshot({ path: info.outputPath("blooming.png"), fullPage: true });
   await expect(page.getByTestId("open-letter")).toBeVisible({ timeout: 12000 });
+  expect(Date.now() - revealStart).toBeLessThan(7500);
+  await expect(page.locator(".butterfly")).toHaveCount(2);
   await expect(page.locator("[data-flower]")).toHaveCount(7);
   await expect(page.locator("[data-petal]")).toHaveCount(266);
   await expect(firstPetal).toHaveAttribute("d", "M0 -13 C-11 -22 -18 -47 -3 -72 C0 -78 2 -77 5 -68 C19 -47 11 -24 0 -13 Z");
@@ -52,6 +61,14 @@ test("surprise stays hidden, genuinely blooms, and opens a replayable letter", a
   await expect(page.getByTestId("teddy-bear")).toBeVisible();
   await expect(page.getByTestId("taters-popcorn")).toBeVisible();
   await expect(page.locator("[data-testid='taters-popcorn'] text").first()).toHaveText("Taters");
+  expect(await page.locator(".teddy-eyes").evaluate(el => getComputedStyle(el).animationName)).toBe("teddy-blink");
+  const artBox = await page.locator(".greeting-illustration").boundingBox();
+  for (const id of ["teddy-bear", "taters-popcorn", "bouquet"]) {
+    const box = await page.getByTestId(id).boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(artBox!.x - 5);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(artBox!.x + artBox!.width + 5);
+  }
+  if (page.viewportSize()!.width >= 800) expect(artBox!.width).toBeGreaterThan(750);
   const envelope = page.getByTestId("open-letter");
   const envelopeBox = await envelope.boundingBox();
   expect(envelopeBox!.height).toBeGreaterThanOrEqual(44);
@@ -66,10 +83,21 @@ test("surprise stays hidden, genuinely blooms, and opens a replayable letter", a
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   await expect(page.getByRole("heading", { name: "My love," })).toBeFocused();
+  await expect(page.locator(".letter-copy p")).toHaveText([
+    "These flowers may only be virtual, but the love behind them is real.",
+    "I made this kind of flowers because I wanted to give you something special. Even though it's just a virtual bouquet, I hope these flowers make you smile and remind you how much you mean to me.",
+    "Thank you for making my days brighter and for being someone so wonderful in my life.",
+    "I love you so much. 💜",
+  ]);
   await expect(dialog).toContainText("the love behind them is real");
   await expect(dialog).toContainText("Paulo");
   await expect(page.locator(".experience")).toHaveAttribute("data-paused", "true");
   await noHorizontalOverflow(page);
+  await expect(page.locator(".letter-paper")).toHaveCSS("opacity", "1");
+  if (page.viewportSize()!.height <= 740) {
+    const closeBox = await dialog.getByRole("button", { name: "Close Letter", exact: true }).boundingBox();
+    expect(closeBox!.y + closeBox!.height).toBeLessThanOrEqual(page.viewportSize()!.height - 10);
+  }
   await page.screenshot({ path: info.outputPath("letter.png"), fullPage: true });
   await page.keyboard.press("Tab");
   await expect(dialog.getByRole("button", { name: "Close Letter", exact: true })).toBeFocused();
@@ -100,9 +128,12 @@ test("reduced motion skips growth but preserves deliberate reveal and letter con
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.getByTestId("bouquet")).toHaveCount(0);
-  await page.getByRole("button", { name: "Open Your Surprise" }).click();
+  await page.getByRole("button", { name: "Open My Surprise" }).click();
   await expect(page.getByTestId("open-letter")).toBeVisible({ timeout: 3000 });
   expect(await page.locator(".bouquet-sway").evaluate(el => getComputedStyle(el).animationName)).toBe("none");
+  for (const selector of [".ambient-cloud", ".ambient-twinkle", ".butterfly", ".teddy-eyes"]) {
+    expect(await page.locator(selector).first().evaluate(el => getComputedStyle(el).animationName)).toBe("none");
+  }
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.getByTestId("open-letter").click();
   await expect(page.getByRole("dialog")).toBeVisible();
