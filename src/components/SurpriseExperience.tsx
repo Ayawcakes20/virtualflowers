@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, MotionConfig } from "motion/react";
 import { surprise } from "@/config/surprise";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -20,7 +20,8 @@ export function SurpriseExperience() {
   const [hidden, setHidden] = useState(false);
   // The first client render must match SSR, including Motion's gesture tabindex.
   // Keep the opening button disabled until its handler has been hydrated.
-  const { ready: hydrated, reduced, setReduced } = useMotionPreference();
+  const { ready: hydrated, reduced, manual, system, setReduced, resetToSystem } = useMotionPreference();
+  const motionButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const update = () => setHidden(document.hidden);
@@ -48,9 +49,14 @@ export function SurpriseExperience() {
       <PageOrnaments />
       <header className="site-header"><div className="wordmark"><Sparkle /><span>a little sunshine<span className="wordmark-dot">.</span></span></div>
         <div className="header-details"><span className="header-note">a little love, from {surprise.from}<Heart /></span>
-          <button type="button" className="motion-control" disabled={!hydrated} aria-label={reduced ? "Enable animations" : "Reduce animations"} onClick={() => setReduced(!reduced)}>
+          <button ref={motionButton} type="button" className="motion-control" disabled={!hydrated} aria-label={reduced ? "Enable animations" : "Reduce animations"} aria-describedby="motion-source" onClick={() => setReduced(!reduced)}>
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" /><path className="motion-icon-off" d="M8 6 L14 10 L8 14Z" fill="currentColor" /><path className="motion-icon-on" d="M8 6V14M12 6V14" stroke="currentColor" strokeWidth="1.5" /></svg><span className="motion-label-on" aria-hidden="true">Motion on</span><span className="motion-label-off" aria-hidden="true">Motion off</span>
           </button>
+          {manual && <button type="button" className="motion-reset" aria-label="Use system motion setting" title="Use system motion setting" onClick={() => {
+            resetToSystem();
+            requestAnimationFrame(() => motionButton.current?.focus({preventScroll:true}));
+          }}><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 7 A6 6 0 1 1 4 13 M4 3V7H8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg></button>}
+          <span id="motion-source" className="sr-only" aria-live="polite">{system ? "Following your system motion setting for this visit." : manual ? "Using your motion choice for this visit." : "Animations are on for this visit."}</span>
         </div>
       </header>
       <main id="main-content">

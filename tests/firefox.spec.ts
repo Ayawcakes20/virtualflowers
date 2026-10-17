@@ -4,16 +4,16 @@ import { surprise } from "../src/config/surprise";
 
 // Use actual Firefox profile preferences: the BiDi driver's media emulation is
 // incomplete. Profiles are temporary and do not change the visitor's browser.
-test("native Firefox motion preference, bloom, secret letter, and saved overrides", async ({ page }, info) => {
+test("native Firefox starts animated, preserves the surprise, and resets ON for a new visit", async ({ page }, info) => {
   const reduced = info.project.name === "firefox-reduced";
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
   await page.goto("/");
   expect(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(reduced);
-  await expect(page.locator(".experience")).toHaveAttribute("data-motion", reduced ? "reduced" : "full");
-  await expect(page.locator(".ambient-twinkle").first()).toHaveCSS("animation-name", reduced ? "none" : "twinkle");
-  if (!reduced) {
+  await expect(page.locator(".experience")).toHaveAttribute("data-motion", "full");
+  await expect(page.locator(".ambient-twinkle").first()).toHaveCSS("animation-name", "twinkle");
+  {
     const star = page.locator(".ambient-twinkle").first();
     const initial = await star.evaluate(el => getComputedStyle(el).transform);
     await expect.poll(() => star.evaluate(el => getComputedStyle(el).transform)).not.toBe(initial);
@@ -21,7 +21,7 @@ test("native Firefox motion preference, bloom, secret letter, and saved override
   await expect(page.getByTestId("bouquet")).toHaveCount(0);
   await page.getByRole("button", {name:"Open My Surprise"}).click();
   await expect(page.getByTestId("surprise-scene")).toBeVisible();
-  if (!reduced) {
+  {
     const petal = page.locator("[data-petal]").first();
     const initial = await petal.getAttribute("d");
     await expect.poll(() => petal.getAttribute("d")).not.toBe(initial);
@@ -40,14 +40,22 @@ test("native Firefox motion preference, bloom, secret letter, and saved override
   await page.getByRole("button", {name:"Watch Again"}).click();
   await expect(page.getByTestId("bouquet")).toHaveCount(0);
 
-  for (const enabled of [reduced,!reduced]) {
+  for (const enabled of [false,true]) {
+    if (enabled) await page.getByRole("button",{name:"Reduce animations",exact:true}).click();
     await page.getByRole("button", {name:enabled ? "Enable animations" : "Reduce animations",exact:true}).click();
     const expected = enabled ? "full" : "reduced";
     await expect(page.locator(".experience")).toHaveAttribute("data-motion", expected);
-    expect(await page.evaluate(key => localStorage.getItem(key), MOTION_STORAGE_KEY)).toBe(expected);
+    expect(await page.evaluate(key => localStorage.getItem(key), MOTION_STORAGE_KEY)).toBeNull();
     await page.reload();
-    await expect(page.locator(".experience")).toHaveAttribute("data-motion", expected);
-    await expect(page.locator(".ambient-twinkle").first()).toHaveCSS("animation-name", enabled ? "twinkle" : "none");
+    await expect(page.locator(".experience")).toHaveAttribute("data-motion", "full");
+    await expect(page.locator(".ambient-twinkle").first()).toHaveCSS("animation-name", "twinkle");
   }
+  await page.getByRole("button",{name:"Reduce animations",exact:true}).click();
+  await page.getByRole("button", {name:"Use system motion setting",exact:true}).click();
+  expect(await page.evaluate(key => localStorage.getItem(key), MOTION_STORAGE_KEY)).toBeNull();
+  await expect(page.locator(".experience")).toHaveAttribute("data-motion", reduced ? "reduced" : "full");
+  await expect(page.getByRole("button", {name:"Use system motion setting",exact:true})).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator(".experience")).toHaveAttribute("data-motion", "full");
   expect(errors).toEqual([]);
 });

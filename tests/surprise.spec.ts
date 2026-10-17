@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { surprise } from "../src/config/surprise";
 
 async function noHorizontalOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -133,12 +134,7 @@ test("surprise stays hidden, genuinely blooms, and opens a replayable letter", a
     {stage:"forward",dialog:false}, {stage:"release",dialog:false}, {stage:"flap",dialog:false}, {stage:"lifting",dialog:false},
   ]);
   await expect(page.getByRole("heading", { name: "My love," })).toBeFocused();
-  await expect(page.locator(".letter-copy p")).toHaveText([
-    "These flowers may only be virtual, but the love behind them is real.",
-    "I made this kind of flowers because I wanted to give you something special. Even though it's just a virtual bouquet, I hope these flowers make you smile and remind you how much you mean to me.",
-    "Thank you for making my days brighter and for being someone so wonderful in my life.",
-    "I love you so much. 💜",
-  ]);
+  await expect(page.locator(".letter-copy p")).toHaveText([...surprise.letter.paragraphs]);
   await expect(dialog).toContainText("the love behind them is real");
   await expect(dialog).toContainText("Paulo");
   await expect(page.locator(".experience")).toHaveAttribute("data-paused", "true");
@@ -172,12 +168,13 @@ test("surprise stays hidden, genuinely blooms, and opens a replayable letter", a
   expect(errors).toEqual([]);
 });
 
-test("reduced motion skips growth but preserves deliberate reveal and letter controls", async ({ page }, info) => {
+test("manual reduced motion skips growth but preserves deliberate reveal and letter controls", async ({ page }, info) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
+  await page.getByRole("button",{name:"Reduce animations",exact:true}).click();
   await expect(page.getByTestId("bouquet")).toHaveCount(0);
   await page.getByRole("button", { name: "Open My Surprise" }).click();
   await expect(page.getByTestId("open-letter")).toBeVisible({ timeout: 3000 });

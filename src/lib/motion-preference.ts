@@ -1,11 +1,8 @@
 export type MotionPreference = "full" | "reduced";
+// Retained for migration checks; startup leaves this legacy value untouched.
 export const MOTION_STORAGE_KEY = "little-sunshine:motion:v1";
+export const MOTION_MEDIA_QUERY = "(prefers-reduced-motion: reduce)";
 
-// Runs in <head> before the first paint. Only a validated preference is used;
-// no stored text is inserted into the document or executable code.
-export const motionPreferenceScript = `(()=>{
-  let saved;
-  try { saved=localStorage.getItem(${JSON.stringify(MOTION_STORAGE_KEY)}); } catch {}
-  const reduced=typeof matchMedia==="function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  document.documentElement.dataset.motionPreference=saved==="full"||saved==="reduced"?saved:reduced?"reduced":"full";
-})();`;
+// Every visit starts animated, as requested. Previous stored choices are left
+// untouched; the visitor can choose reduced/system motion for this visit.
+export const motionPreferenceScript = `document.documentElement.dataset.motionPreference="full";`;

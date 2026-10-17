@@ -19,6 +19,8 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  // Only the head script's intentional data attribute differs before hydration.
-  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: motionPreferenceScript }} /></head><body>{children}</body></html>;
+  // The head script changes only html's motion attribute. Grammarly can also add
+  // attributes to the otherwise static body before React hydrates it. These
+  // shallow exceptions leave hydration checks inside the app fully active.
+  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: motionPreferenceScript }} /></head><body suppressHydrationWarning>{children}</body></html>;
 }
