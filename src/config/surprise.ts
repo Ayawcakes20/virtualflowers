@@ -23,7 +23,7 @@ export const surprise = {
     salutation: "My love,",
     paragraphs: [
       "These flowers may only be virtual, but the love behind them is real.",
-      "I made this kind of flowers because I wanted to give you something special. Even though it's just a virtual bouquet, I hope these flowers make you smile and remind you how much you mean to me.",
+      "I may not be the most romantic person out there, but I hope these flowers make you smile and remind you how much you mean to me.",
       "Thank you for making my days brighter and for being someone so wonderful in my life.",
       "I love you so much. 💜",
     ],
