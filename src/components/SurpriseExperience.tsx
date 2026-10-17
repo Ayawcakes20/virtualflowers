@@ -20,11 +20,12 @@ export function SurpriseExperience() {
   const [replayed, setReplayed] = useState(false);
   const [envelopeVersion, setEnvelopeVersion] = useState(0);
   const [hidden, setHidden] = useState(false);
+  const [motionChoice, setMotionChoice] = useState<boolean | null>(null);
   // The first client render must match SSR, including Motion's gesture tabindex.
   // Keep the opening button disabled until its handler has been hydrated.
   const hydrated = useSyncExternalStore(subscribeHydration, clientSnapshot, serverSnapshot);
   const motionPreference = useReducedMotion();
-  const reduced = hydrated && !!motionPreference;
+  const reduced = hydrated && (motionChoice ?? !!motionPreference);
 
   useEffect(() => {
     const update = () => setHidden(document.hidden);
@@ -47,10 +48,16 @@ export function SurpriseExperience() {
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>("[data-testid='open-letter']")?.focus({ preventScroll: true }));
   }
 
-  return <MotionConfig reducedMotion="user">
-    <div className={`experience ${scene === "surprise" ? "experience-revealed" : ""}`} style={theme} data-paused={hidden || !!letter}>
-      <PageOrnaments revealed={scene === "surprise"} />
-      <header className="site-header"><div className="wordmark"><Sparkle /><span>a little sunshine<span className="wordmark-dot">.</span></span></div><span className="header-note">a little love, from {surprise.from}<Heart /></span></header>
+  return <MotionConfig reducedMotion={reduced ? "always" : "never"}>
+    <div className={`experience ${scene === "surprise" ? "experience-revealed" : ""}`} style={theme} data-paused={hidden || !!letter} data-motion={hydrated ? (reduced ? "reduced" : "full") : "system"}>
+      <PageOrnaments />
+      <header className="site-header"><div className="wordmark"><Sparkle /><span>a little sunshine<span className="wordmark-dot">.</span></span></div>
+        <div className="header-details"><span className="header-note">a little love, from {surprise.from}<Heart /></span>
+          <button type="button" className="motion-control" disabled={!hydrated} aria-label={reduced ? "Enable animations" : "Reduce animations"} onClick={() => setMotionChoice(!reduced)}>
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" />{reduced ? <path d="M8 6 L14 10 L8 14Z" fill="currentColor" /> : <path d="M8 6V14M12 6V14" stroke="currentColor" strokeWidth="1.5" />}</svg><span>Motion {reduced ? "off" : "on"}</span>
+          </button>
+        </div>
+      </header>
       <main id="main-content">
         <AnimatePresence mode="wait" initial={false}>
           {scene === "welcome" ? <WelcomeScreen key="welcome" reduced={reduced} opening={opening || !hydrated} replayed={replayed} onOpen={() => { if (!opening && hydrated) { setOpening(true); setScene("surprise"); } }} />

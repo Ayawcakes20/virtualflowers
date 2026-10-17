@@ -9,6 +9,7 @@ import { TeddyBear } from "./illustrations/TeddyBear";
 import { TatersPopcorn } from "./illustrations/TatersPopcorn";
 import { LoveEnvelope } from "./LoveEnvelope";
 import type { LetterOrigin } from "./LoveLetter";
+import { SceneButterflies } from "./Ornaments";
 
 function subscribeWide(callback: () => void) {
   const media = window.matchMedia("(min-width: 800px)");
@@ -36,6 +37,7 @@ export function SurpriseScene({ reduced, onOpenLetter, onReplay, envelopeVersion
       <div className="scene-halo" aria-hidden="true" />
       <span className="postcard-tape tape-left" aria-hidden="true" /><span className="postcard-tape tape-right" aria-hidden="true" />
       <div className="postcard">
+        <div className={`illustration-frame ${wide ? "illustration-wide" : ""}`}>
         <svg className="greeting-illustration" viewBox={wide ? "-85 20 770 550" : "25 30 550 550"} role="img" aria-labelledby="bouquet-description">
           <title id="bouquet-description">An animated bouquet of yellow sunflowers and lavender flowers, wrapped in purple paper, with a brown teddy bear and Taters popcorn in a sunny garden.</title>
           <BouquetGradients />
@@ -54,9 +56,11 @@ export function SurpriseScene({ reduced, onOpenLetter, onReplay, envelopeVersion
           <Grass />
           <text x="300" y="569" textAnchor="middle" fill="#617A53" fontFamily="Cormorant Garamond, Georgia, serif" fontSize="17" fontStyle="italic">a little sunshine for you</text>
         </svg>
+        <SceneButterflies />
+        {bloomed && <LoveEnvelope key={envelopeVersion} reduced={reduced} onOpen={onOpenLetter} />}
+        </div>
         <div className="postcard-caption"><span>FOR YOU, ALWAYS</span><span aria-hidden="true">♡</span><span>WITH LOVE, {surprise.from.toUpperCase()}</span></div>
       </div>
-      {bloomed && <LoveEnvelope key={envelopeVersion} reduced={reduced} onOpen={onOpenLetter} />}
     </div>
     <div className="scene-afterword" aria-live="polite"><p>{bloomed ? surprise.scene.ready : surprise.scene.growing}</p></div>
     {bloomed && <button className="text-button replay-button" type="button" onClick={onReplay}><span aria-hidden="true">↻</span> Watch Again</button>}

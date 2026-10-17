@@ -6,7 +6,7 @@ import { surprise } from "@/config/surprise";
 import { Heart } from "./Ornaments";
 import type { LetterOrigin } from "./LoveLetter";
 
-type Fold = "sealed" | "forward" | "flap" | "lifting";
+type Fold = "sealed" | "forward" | "release" | "flap" | "lifting";
 
 export function EnvelopeArt({ stage = "sealed", reduced = false, onFlapComplete, onPaperComplete }: {
   stage?: Fold; reduced?: boolean; onFlapComplete?: () => void; onPaperComplete?: () => void;
@@ -26,7 +26,7 @@ export function EnvelopeArt({ stage = "sealed", reduced = false, onFlapComplete,
       onAnimationComplete={() => { if (stage === "flap") onFlapComplete?.(); }}>
       <svg viewBox="0 0 200 80"><path d="M1 2 H199 L110 72 Q100 80 90 72Z" fill="#E9DCF3" stroke="#BEA2D0" strokeWidth="1.3" /></svg>
     </motion.div>
-    <motion.div className="envelope-seal" animate={{ opacity: stage === "sealed" || stage === "forward" ? 1 : 0 }} transition={{ duration: .12 }}><Heart /></motion.div>
+    <motion.div className="envelope-seal" animate={{ opacity: stage === "sealed" || stage === "forward" ? 1 : 0, y: stage === "sealed" || stage === "forward" ? 0 : 9, rotate: stage === "release" ? 18 : 0 }} transition={{ duration: reduced ? .01 : .2 }} onAnimationComplete={() => { if (stage === "release") onFlapComplete?.(); }}><Heart /></motion.div>
   </div>;
 }
 
@@ -37,17 +37,26 @@ export function LoveEnvelope({ reduced, onOpen }: { reduced: boolean; onOpen: (o
     const box = envelope.current?.getBoundingClientRect();
     if (box) onOpen({ x: box.x + box.width / 2 - window.innerWidth / 2, y: box.y + box.height / 2 - window.innerHeight / 2 });
   }
-  return <motion.div className="letter-invitation" initial={{ opacity: 0, y: reduced ? 0 : 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .5 }}>
-    <button type="button" className="letter-button" disabled={stage !== "sealed"}
-      onClick={() => setStage("forward")} aria-label={surprise.scene.letterButton} aria-haspopup="dialog" data-testid="open-letter">
-      <div ref={envelope} className={`small-envelope ${stage === "sealed" ? "envelope-float" : ""}`}>
-        <motion.div className="envelope-forward" initial={false} animate={{ y: stage === "sealed" ? 0 : -8, scale: stage === "sealed" ? 1 : 1.12 }}
-          transition={{ duration: reduced ? .01 : surprise.timing.envelopeForward, ease: "easeOut" }}
-          onAnimationComplete={() => { if (stage === "forward") setStage("flap"); }}>
-          <EnvelopeArt stage={stage} reduced={reduced} onFlapComplete={() => setStage("lifting")} onPaperComplete={openLetter} />
-        </motion.div>
-      </div>
-      <span>{surprise.scene.letterButton}<span aria-hidden="true" className="letter-arrow">↗</span></span>
+  const unfolded = stage !== "sealed" && stage !== "forward";
+  return <div className="secret-letter" data-stage={stage}>
+    <button type="button" className="secret-letter-button" disabled={stage !== "sealed"}
+      onClick={() => setStage("forward")} aria-label={surprise.scene.hiddenLetterLabel} aria-haspopup="dialog" data-testid="open-letter">
+      <motion.div className="secret-heart" initial={{ opacity: 0 }}
+        animate={{ opacity: unfolded ? 0 : 1, y: stage === "forward" ? -8 : 0, scale: stage === "forward" ? 1.15 : 1 }}
+        transition={{ duration: reduced ? .01 : surprise.timing.envelopeForward }}
+        onAnimationComplete={() => { if (stage === "forward") setStage("release"); }}>
+        <svg viewBox="-30 -30 60 60" aria-hidden="true"><g className="secret-heart-idle" transform="rotate(13)">
+          <path d="M0 22 C-12 12 -34 -5 -22 -21 C-13 -32 -2 -25 0 -16 C2 -25 13 -32 22 -21 C34 -5 12 12 0 22Z" fill="#FFF8ED" stroke="#B99ACA" strokeWidth="1.5" />
+          <path d="M0 6 C-21 -9 -8 -18 0 -8 C8 -18 21 -9 0 6Z" fill="#A07BB5" />
+          <path className="seal-glimmer" d="M-12 -17 l1 4 4 1 -4 1 -1 4 -1 -4 -4 -1 4 -1Z" fill="#FFF" />
+        </g></svg>
+      </motion.div>
     </button>
-  </motion.div>;
+    <motion.div ref={envelope} className="secret-envelope" aria-hidden="true" initial={false}
+      animate={{ opacity: unfolded ? 1 : 0, y: unfolded ? -15 : 0, scale: unfolded ? 1 : .35, rotate: unfolded ? -5 : 13 }}
+      transition={{ duration: reduced ? .01 : .22, ease: "easeOut" }}>
+      {unfolded && <EnvelopeArt stage={stage} reduced={reduced}
+        onFlapComplete={() => setStage(stage === "release" ? "flap" : "lifting")} onPaperComplete={openLetter} />}
+    </motion.div>
+  </div>;
 }

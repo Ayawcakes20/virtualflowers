@@ -28,10 +28,12 @@ No environment variables, accounts, databases, API keys, audio, or paid services
 2. A short exit transition leads into the illustrated postcard. Purple paper forms, green stems draw upward, leaves unfold, and buds open into seven layered sunflowers.
 3. The sunflowers have **266 separately animated petals**. Each petal's Bézier path moves through folded, cupped, and fully open shapes, with independently staggered pivots, highlights, and veins. These are real SVG geometry and transform animations, not raster illustrations sliding into view.
 4. Twelve smaller lavender/cream flowers and baby's breath finish the bouquet. The larger teddy bounces in, breathes, blinks, and occasionally waves. The detailed Taters popcorn kernels pop into place. Two butterflies flutter around the scene. Clouds, rays, petals, leaves, and flower corollas continue subtle secondary motion.
-5. After approximately **4.4 seconds** of growing, **Read My Letter 💌** appears immediately in front of the bottom of the wrapper. It never opens on its own.
-6. One tap moves the envelope forward, folds the flap back, lifts out the paper, and expands the stationery from the envelope's position into a readable letter, in approximately **1.24 seconds**. Close Letter or Escape returns to the bouquet. Watch Again returns to the sealed welcome screen; a new tap starts the complete growth sequence again.
+5. After approximately **4.4 seconds** of growing, a small cream heart seal becomes part of the purple wrapper. It is the secret letter control: there is no visible label, tooltip, instruction, large envelope, or automatic opening. Its native button has a 44×44px touch target and the screen-reader name **Open hidden letter**.
+6. Tapping the heart lifts the folded card, reveals the little envelope, releases its seal, hinges the flap open, and lifts the cream paper. The stationery then unfolds from that position into the unchanged letter. Close Letter or Escape returns focus to the heart. Watch Again returns to the welcome screen; a new tap starts the complete growth sequence again.
 
-The illustrated objects remain in one SVG coordinate system: desktop gets a larger landscape postcard, while phones use a tighter square view that keeps every essential object visible. The composition and illustration layering are preserved. Ambient layers drift at different speeds to provide automatic depth without requiring a pointer. Large buttons work with touch and keyboard. The letter uses native modal `<dialog>` behavior, a labeled heading, focus containment, a scrollable paper, and focus restoration. Reduced motion shows the completed bouquet after the intentional first tap, skips the growth, removes ambient loops, and shortens the letter transition. Ambient CSS animations pause while the document is hidden or the letter is open; SVG growth animations are finite and unmount on replay.
+The illustrated objects remain in one SVG coordinate system: desktop gets a larger landscape postcard, while phones use a tighter square view that keeps every essential object visible. The heart control is anchored to the same wrapper coordinates at both aspect ratios. Every background ornament owns its animation; layer containers do not animate. Twenty-four SVG sparkles have separate sizes, brightness, rotations, periods, and negative phases. Eight lavender/pink/cream hearts follow varied drifting paths, four clouds drift at different rates and directions, twelve small motes rise, and two occasional light trails cross the margins. The lavender light layers move independently. Two original butterflies hover around the bouquet on separate flight paths with different rests; each wing rotates around its attachment point with its own hinge animation. All parameters are deterministic.
+
+The letter uses native modal `<dialog>` behavior, a labeled heading, focus containment, a scrollable paper, and focus restoration. The system's reduced-motion setting is honored by default: it shows the completed bouquet after the intentional first tap, removes ambient loops, and shortens the letter transition. The small **Motion on/off** header control lets a visitor explicitly opt into full animation or choose reduced motion for the current page session. This also makes the full experience available in previews that report reduced motion. It does not change device settings or reveal the letter. Ambient CSS animations pause while the document is hidden or the letter is open; SVG growth animations are finite and unmount on replay.
 
 The personalized letter's eyebrow, salutation, four paragraphs, and closing have been preserved exactly from the supplied reference. The browser tests also assert the exact paragraph text.
 
@@ -60,9 +62,9 @@ src/
     SurpriseExperience    Welcome / postcard / modal state and replay
     WelcomeScreen         Sealed opening screen, no flowers
     SurpriseScene         Greeting-card composition and reveal completion
-    LoveEnvelope          Flap hinge and paper-lift sequence
+    LoveEnvelope          Hidden wrapper heart, seal release, flap, paper lift
     LoveLetter            Accessible native modal and personal message
-    Ornaments             Layered animated sky, lights, hearts, butterflies
+    Ornaments             Independent sky, stars, hearts, lights, hinged butterflies
     flowers/              Petals, sunflower layers, stems, leaves, wrapper
     illustrations/        Teddy, popcorn, sun, clouds, grass, drifting petals
 tests/surprise.spec.ts     End-to-end interaction and layout checks
@@ -82,6 +84,7 @@ Research included the actual runnable code snippets in the official guides and s
 | [MDN: CSS animations](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Animations/Using) | Small transform-based loops handle clouds, rays, teddy breathing, bouquet sway, and four drifting petals. CSS media queries disable loops for reduced motion. |
 | [web.dev: high-performance CSS animation](https://web.dev/articles/animations-guide) | Ambient clouds, hearts, butterflies, light gradients, and motes move using transform/opacity instead of repeatedly changing layout. Gradient artwork is moved as a layer; background-position is not animated. Particle counts stay bounded and no particle library is used. |
 | [MDN: transform-origin](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/transform-origin) | Explicit local pivots let leaves flutter, the teddy blink, butterflies flap, and flower corollas breathe without disconnecting from their stems. |
+| [MDN: animation-delay](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/animation-delay) | Negative delays start ornaments at different positions in their cycles immediately. Each sparkle, heart, cloud, and butterfly has a deterministic period and phase; static layer containers prevent synchronized group movement. |
 | [MDN: transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms/Using) and [rotateX](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/transform-function/rotateX) | A perspective container and top-hinged rotateX transform make the envelope flap physically fold before the paper rises. |
 | [MDN: dialog](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) | Native showModal provides focus containment and inert background content. Explicit close buttons and Escape are supported. |
 | [GSAP Timeline documentation](https://gsap.com/docs/v3/GSAP/Timeline/) | Reviewed relative sequencing and timeline composition. Motion handles this choreography completely, so GSAP is not installed. |
@@ -112,7 +115,7 @@ npm run test:e2e
 
 If Google Chrome is not installed, install it or remove `channel: "chrome"` from `playwright.config.ts` and run `npx playwright install chromium webkit`. The suite can start its own development server, or reuse localhost:3000.
 
-The **20-test matrix** covers Chrome and WebKit at **375×812, 390×844, 430×932, and 1440×1000**, plus Android Pixel 7 and iPhone 13 device profiles, both with normal and reduced motion. The device profiles include mobile viewport behavior, touch, and mobile user agents. It checks initial flower absence, continuous cloud movement without clicking, changing petal geometry, correct final pivots, complete illustration bounds, desktop scene size, teddy blinking, envelope availability, flap/paper ordering, exact preserved letter text, keyboard controls, focus restoration, repeated opening, replay, touch targets, and horizontal overflow. Screenshots of welcome, growth, bouquet, and letter are saved under `test-results/` when the suite runs. The HTML report is in `playwright-report/`.
+The **20-test matrix** covers Chrome and WebKit at **375×812, 390×844, 430×932, and 1440×1000**, plus Android Pixel 7 and iPhone 13 device profiles, both with normal and reduced motion. The device profiles include mobile viewport behavior, touch, and mobile user agents. It samples actual changing cloud, heart, sparkle, butterfly-flight and wing transforms; checks independent periods/phases and static ambient parents; and verifies flower geometry/pivots, complete illustration bounds, desktop scene size, teddy blinking, hidden letter discovery, native touch activation, the ordered lift/seal/flap/paper sequence, exact letter text, keyboard Space, focus restoration, repeated opening, replay, motion opt-in/out, touch targets, and no horizontal overflow. Screenshots of welcome, growth, bouquet, and letter are saved under `test-results/` when the suite runs. The HTML report is in `playwright-report/`.
 
 Browser-engine emulation is not a physical iPhone/Android device test. Real-device responsiveness and frame rate should also be checked on the phone used for the gift; no hardware-specific frame-rate guarantee is claimed.
 
@@ -135,6 +138,15 @@ Browser-engine emulation is not a physical iPhone/Android device test. Real-devi
 - Both browser flows checked runtime/console errors and the exact four letter paragraphs; all passed. The full letter configuration block also matched its saved pre-edit baseline exactly.
 - Rendered phone and desktop screenshots, intermediate bud/opening frames, and actual changing cloud transforms were inspected. Essential illustration bounds and the visible letter invitation were verified at each viewport.
 - The refined source is committed to the existing GitHub repository; no Vercel deployment or physical-device test is part of this revision.
+
+### Living background and hidden letter verification — October 18, 2026
+
+- `npm run lint`, `npm run typecheck`, and `npm run build` passed.
+- `npm run test:e2e` against the optimized production application: **20 passed (2.1 minutes)**. This includes Chrome and WebKit phone/desktop widths, Android Pixel 7 and iPhone 13 profiles, actual touch activation, keyboard Space, independent ambient motion and wing transforms, opening-stage order, reduced motion, and explicit motion opt-in/out. The test flows reported no console/runtime errors or horizontal overflow.
+- The whole `letter` configuration block matched the saved pre-edit baseline exactly; the browser suite also checked all four paragraphs verbatim.
+- Phone and desktop screenshots were inspected. The live in-app preview reported reduced motion enabled, explaining its static appearance. Explicitly enabling Motion restored the independent loops; changing star, heart, flight, and wing transforms were sampled in the running preview. The hidden heart and preserved letter were opened and inspected there too.
+- `.gitignore` exclusions were verified for dependencies, builds, local QA files, reports, and environment files. No generated screenshots or reports are uploaded.
+- Verification uses browser engines and device profiles, not physical phone hardware. No Vercel deployment was performed.
 
 ## GitHub repository
 

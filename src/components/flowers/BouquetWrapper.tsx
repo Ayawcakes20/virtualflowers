@@ -21,10 +21,6 @@ export function BouquetWrapper({ reduced, back = false }: { reduced: boolean; ba
       <path d="M303 425 C256 377 233 410 262 426 Q284 434 303 425 C350 379 365 410 342 424 Q326 434 303 425" fill="#BB9CD3" stroke="#78568F" strokeWidth="2" />
       <path d="M303 426 Q297 466 272 478 L280 455 L271 451 Q289 441 297 426 M307 426 Q330 448 335 469 L344 451 Q326 432 312 424" fill="#9C78B4" stroke="#78568F" strokeWidth="1" />
       <ellipse cx="305" cy="425" rx="8" ry="6" fill="#8F6AA7" />
-      <g transform="translate(342 382) rotate(13)">
-        <path d="M-17 0 Q-26 -15 -12 -20 Q-4 -22 0 -13 Q7 -23 16 -18 Q31 -8 0 17Z" fill="#FFF8ED" stroke="#C3AACD" strokeWidth="1" />
-        <path d="M-6 -7 C-11 -14 -18 -5 0 5 C18 -5 11 -14 6 -7 Q0 -1 -6 -7Z" fill="#A07BB5" transform="scale(.65)" />
-      </g>
     </>}
   </motion.g>;
 }

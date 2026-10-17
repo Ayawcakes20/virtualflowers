@@ -16,7 +16,7 @@ export const surprise = {
     subtitle: "A little sunshine, wrapped in all my love.",
     growing: "Growing a little happiness for you…",
     ready: "Every little bloom, a little reminder of my love.",
-    letterButton: "Read My Letter 💌",
+    hiddenLetterLabel: "Open hidden letter",
   },
   letter: {
     eyebrow: "A LITTLE NOTE, JUST FOR YOU",
