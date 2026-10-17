@@ -23,6 +23,9 @@ svg { display:block; }
 .header-details { display:flex; align-items:center; gap:22px; }
 .motion-control { display:flex; align-items:center; gap:6px; min-height:44px; padding:8px 0 8px 8px; border:0; background:none; color:#80618F; font-size:10px; }
 .motion-control svg { width:17px; height:17px; }
+.motion-label-off,.motion-icon-off { display:none; }
+html[data-motion-preference="reduced"] .motion-label-on,html[data-motion-preference="reduced"] .motion-icon-on { display:none; }
+html[data-motion-preference="reduced"] .motion-label-off,html[data-motion-preference="reduced"] .motion-icon-off { display:block; }
 main { position:relative; z-index:1; }
 .site-footer { min-height:58px; padding:18px 20px; display:flex; align-items:center; justify-content:center; gap:8px; color:#8B719A; font-size:10px; letter-spacing:.035em; }
 .site-footer>svg { width:12px; color:#9E78B7; }
@@ -255,10 +258,11 @@ h1 em { font-weight:500; color:#A278BA; }
   .letter-x { top:5px; right:8px; }
 }
 @media (max-height:760px) and (min-width:800px) { .site-header { height:64px; }.welcome-screen { min-height:calc(100svh - 116px); padding-block:10px; }.welcome-card { padding-block:24px; }.welcome-envelope { height:136px; transform:scale(.82); margin-top:-12px; margin-bottom:-4px; }.greeting { margin-top:10px; }.welcome-card h1 { font-size:60px; }.welcome-message { margin-block:17px 20px; }.welcome-footnote { margin-top:16px; }.surprise-screen { padding-top:3px; }.surprise-screen h1 { font-size:39px; }.postcard-wrap { width:650px; min-width:0; }.scene-subtitle { margin-bottom:20px; } }
-/* System preference wins by default; only an explicit tap can opt into motion. */
-.experience[data-motion="reduced"] *,.experience[data-motion="reduced"] *::before,.experience[data-motion="reduced"] *::after { animation:none !important; scroll-behavior:auto !important; }
-.experience[data-motion="reduced"] .ambient-heart { opacity:.45; }
-.experience[data-motion="reduced"] .ambient-twinkle { opacity:.5; }
-.experience[data-motion="reduced"] .light-mote { opacity:.45; }
-.experience[data-motion="reduced"] .paper-fold { display:none; }
-@media (prefers-reduced-motion:reduce) { .experience:not([data-motion="full"]) *,.experience:not([data-motion="full"]) *::before,.experience:not([data-motion="full"]) *::after { animation:none !important; scroll-behavior:auto !important; }.experience:not([data-motion="full"]) .ambient-heart { opacity:.45; }.experience:not([data-motion="full"]) .ambient-twinkle { opacity:.5; }.experience:not([data-motion="full"]) .light-mote { opacity:.45; }.experience:not([data-motion="full"]) .paper-fold { display:none; } }
+/* The head script resolves saved choice > OS setting > full before first paint. */
+html[data-motion-preference="reduced"] .experience *,html[data-motion-preference="reduced"] .experience *::before,html[data-motion-preference="reduced"] .experience *::after { animation:none !important; scroll-behavior:auto !important; }
+html[data-motion-preference="reduced"] .ambient-heart { opacity:.45; }
+html[data-motion-preference="reduced"] .ambient-twinkle { opacity:.5; }
+html[data-motion-preference="reduced"] .light-mote { opacity:.45; }
+html[data-motion-preference="reduced"] .paper-fold { display:none; }
+/* Keep the OS fallback accessible even if JavaScript is blocked entirely. */
+@media (prefers-reduced-motion:reduce) { html:not([data-motion-preference="full"]) .experience *,html:not([data-motion-preference="full"]) .experience *::before,html:not([data-motion-preference="full"]) .experience *::after { animation:none !important; scroll-behavior:auto !important; }html:not([data-motion-preference]) .motion-label-on,html:not([data-motion-preference]) .motion-icon-on { display:none; }html:not([data-motion-preference]) .motion-label-off,html:not([data-motion-preference]) .motion-icon-off { display:block; } }

@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore, type CSSProperties } from "react";
-import { AnimatePresence, MotionConfig, useReducedMotion } from "motion/react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { AnimatePresence, MotionConfig } from "motion/react";
 import { surprise } from "@/config/surprise";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { SurpriseScene } from "./SurpriseScene";
 import { LoveLetter, type LetterOrigin } from "./LoveLetter";
 import { Heart, PageOrnaments, Sparkle } from "./Ornaments";
+import { useMotionPreference } from "@/hooks/useMotionPreference";
 
 const theme = Object.fromEntries(Object.entries(surprise.theme).map(([key, value]) => [`--${key}`, value])) as CSSProperties;
-const subscribeHydration = () => () => {};
-const clientSnapshot = () => true;
-const serverSnapshot = () => false;
 
 export function SurpriseExperience() {
   const [scene, setScene] = useState<"welcome" | "surprise">("welcome");
@@ -20,12 +18,9 @@ export function SurpriseExperience() {
   const [replayed, setReplayed] = useState(false);
   const [envelopeVersion, setEnvelopeVersion] = useState(0);
   const [hidden, setHidden] = useState(false);
-  const [motionChoice, setMotionChoice] = useState<boolean | null>(null);
   // The first client render must match SSR, including Motion's gesture tabindex.
   // Keep the opening button disabled until its handler has been hydrated.
-  const hydrated = useSyncExternalStore(subscribeHydration, clientSnapshot, serverSnapshot);
-  const motionPreference = useReducedMotion();
-  const reduced = hydrated && (motionChoice ?? !!motionPreference);
+  const { ready: hydrated, reduced, setReduced } = useMotionPreference();
 
   useEffect(() => {
     const update = () => setHidden(document.hidden);
@@ -53,8 +48,8 @@ export function SurpriseExperience() {
       <PageOrnaments />
       <header className="site-header"><div className="wordmark"><Sparkle /><span>a little sunshine<span className="wordmark-dot">.</span></span></div>
         <div className="header-details"><span className="header-note">a little love, from {surprise.from}<Heart /></span>
-          <button type="button" className="motion-control" disabled={!hydrated} aria-label={reduced ? "Enable animations" : "Reduce animations"} onClick={() => setMotionChoice(!reduced)}>
-            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" />{reduced ? <path d="M8 6 L14 10 L8 14Z" fill="currentColor" /> : <path d="M8 6V14M12 6V14" stroke="currentColor" strokeWidth="1.5" />}</svg><span>Motion {reduced ? "off" : "on"}</span>
+          <button type="button" className="motion-control" disabled={!hydrated} aria-label={reduced ? "Enable animations" : "Reduce animations"} onClick={() => setReduced(!reduced)}>
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" /><path className="motion-icon-off" d="M8 6 L14 10 L8 14Z" fill="currentColor" /><path className="motion-icon-on" d="M8 6V14M12 6V14" stroke="currentColor" strokeWidth="1.5" /></svg><span className="motion-label-on" aria-hidden="true">Motion on</span><span className="motion-label-off" aria-hidden="true">Motion off</span>
           </button>
         </div>
       </header>

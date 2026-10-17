@@ -9,6 +9,7 @@ const sizes = [
 
 export default defineConfig({
   testDir: "./tests",
+  testMatch: ["**/surprise.spec.ts", "**/motion-preference.spec.ts"],
   fullyParallel: true,
   workers: 2,
   timeout: 35000,
@@ -30,6 +31,12 @@ export default defineConfig({
   }))),
   { name: "android-pixel", use: { ...devices["Pixel 7"], browserName: "chromium", channel: "chrome", deviceScaleFactor: 2 } },
   { name: "ios-iphone", use: { ...devices["iPhone 13"], browserName: "webkit", deviceScaleFactor: 2 } },
+  ...[false,true].map(reduced => ({
+    name:`firefox-${reduced ? "reduced" : "normal"}`,
+    testMatch:"**/firefox.spec.ts",
+    use:{ browserName:"firefox" as const, channel:"moz-firefox", viewport:{width:1440,height:1000},
+      launchOptions:{firefoxUserPrefs:{"ui.prefersReducedMotion":reduced ? 1 : 0}} },
+  })),
   ],
   webServer: {
     command: "npm run dev",

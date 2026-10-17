@@ -33,7 +33,13 @@ No environment variables, accounts, databases, API keys, audio, or paid services
 
 The illustrated objects remain in one SVG coordinate system: desktop gets a larger landscape postcard, while phones use a tighter square view that keeps every essential object visible. The heart control is anchored to the same wrapper coordinates at both aspect ratios. Every background ornament owns its animation; layer containers do not animate. Twenty-four SVG sparkles have separate sizes, brightness, rotations, periods, and negative phases. Eight lavender/pink/cream hearts follow varied drifting paths, four clouds drift at different rates and directions, twelve small motes rise, and two occasional light trails cross the margins. The lavender light layers move independently. Two original butterflies hover around the bouquet on separate flight paths with different rests; each wing rotates around its attachment point with its own hinge animation. All parameters are deterministic.
 
-The letter uses native modal `<dialog>` behavior, a labeled heading, focus containment, a scrollable paper, and focus restoration. The system's reduced-motion setting is honored by default: it shows the completed bouquet after the intentional first tap, removes ambient loops, and shortens the letter transition. The small **Motion on/off** header control lets a visitor explicitly opt into full animation or choose reduced motion for the current page session. This also makes the full experience available in previews that report reduced motion. It does not change device settings or reveal the letter. Ambient CSS animations pause while the document is hidden or the letter is open; SVG growth animations are finite and unmount on replay.
+The letter uses native modal `<dialog>` behavior, a labeled heading, focus containment, a scrollable paper, and focus restoration. **Motion is on automatically when the visitor has not requested reduced motion.** An explicit OS/browser reduced-motion preference is honored on the first visit: it shows the completed bouquet after the intentional first tap, removes ambient loops, and shortens the letter transition. The small **Motion on/off** header control lets the visitor override that default and remembers the choice across refreshes and future visits using `localStorage`. It does not change device settings or reveal the letter. Ambient CSS animations pause while the document is hidden or the letter is open; SVG growth animations are finite and unmount on replay.
+
+### Motion preference initialization
+
+The priority is **saved manual choice → OS/browser preference → Motion on**. Only an explicit toggle saves a choice, so an unsaved visitor continues to follow changes to their OS setting. A previously enabled reduced-motion setting in the in-app preview explained its earlier “Motion off” state; the app was honoring the reported preference.
+
+`src/lib/motion-preference.ts` defines the versioned key `little-sunshine:motion:v1` (`full` or `reduced`) and a small head script. The script resolves the preference before the first paint, so both ambient CSS and the visible toggle label are correct while React loads. `src/hooks/useMotionPreference.ts` then uses `useSyncExternalStore` with a stable server snapshot to hydrate safely and drive `MotionConfig` and the SVG growth sequence from the same setting. The hook listens for system and cross-tab storage changes and cleans up its listeners. Invalid stored values fall back to the system preference. If storage is blocked, defaults and the current-page toggle still work, but the browser cannot remember changes after a reload. No cookies, personal data, or server storage are involved.
 
 The personalized letter's eyebrow, salutation, four paragraphs, and closing have been preserved exactly from the supplied reference. The browser tests also assert the exact paragraph text.
 
@@ -67,7 +73,11 @@ src/
     Ornaments             Independent sky, stars, hearts, lights, hinged butterflies
     flowers/              Petals, sunflower layers, stems, leaves, wrapper
     illustrations/        Teddy, popcorn, sun, clouds, grass, drifting petals
+  hooks/useMotionPreference.ts  Saved/system motion preference subscription
+  lib/motion-preference.ts      Storage key and pre-paint initialization script
 tests/surprise.spec.ts     End-to-end interaction and layout checks
+tests/motion-preference.spec.ts  Defaults, persistence, hydration, storage fallback
+tests/firefox.spec.ts     Native Firefox settings, surprise, saved overrides
 playwright.config.ts      Chrome + WebKit, phone and desktop widths
 ```
 
@@ -79,12 +89,13 @@ Research included the actual runnable code snippets in the official guides and s
 | --- | --- |
 | [Motion: SVG animation](https://motion.dev/docs/react-svg-animation) | Use normalized `pathLength` for growing stems and interpolate compatible `d` attributes for real petal morphing. Explicit local transform origins keep petals attached. |
 | [Motion: React animation](https://motion.dev/docs/react-animation) | Use declarative initial/animate states, easing, per-petal delays, and AnimatePresence for the scene transition. Completion callbacks sequence the envelope flap, paper lift, and modal. |
-| [Motion: accessibility](https://motion.dev/docs/react-accessibility) | Combine MotionConfig with useReducedMotion; geometry animation and delays are also explicitly bypassed for reduced motion. |
+| [Motion: accessibility](https://motion.dev/docs/react-accessibility) | Drive MotionConfig, geometry animation, and delays from one resolved preference. The original useReducedMotion-only behavior now uses a shared saved/system preference store so an explicit visitor choice also survives reloads. |
 | [MDN: SVG `d`](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/d) | Original cubic Bézier shapes give pointed, cupped petals rather than circles or emoji. The folded and open shapes use matching commands. |
 | [MDN: CSS animations](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Animations/Using) | Small transform-based loops handle clouds, rays, teddy breathing, bouquet sway, and four drifting petals. CSS media queries disable loops for reduced motion. |
 | [web.dev: high-performance CSS animation](https://web.dev/articles/animations-guide) | Ambient clouds, hearts, butterflies, light gradients, and motes move using transform/opacity instead of repeatedly changing layout. Gradient artwork is moved as a layer; background-position is not animated. Particle counts stay bounded and no particle library is used. |
 | [MDN: transform-origin](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/transform-origin) | Explicit local pivots let leaves flutter, the teddy blink, butterflies flap, and flower corollas breathe without disconnecting from their stems. |
 | [MDN: animation-delay](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/animation-delay) | Negative delays start ornaments at different positions in their cycles immediately. Each sparkle, heart, cloud, and butterfly has a deterministic period and phase; static layer containers prevent synchronized group movement. |
+| [React: useSyncExternalStore](https://react.dev/reference/react/useSyncExternalStore), [MDN: localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage), and [MDN: matchMedia](https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia) | Keep the initial server/client snapshot identical, subscribe to browser preference changes, persist explicit visitor choices, and handle storage access failures. The head script applies the same validated preference before hydration. |
 | [MDN: transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms/Using) and [rotateX](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/transform-function/rotateX) | A perspective container and top-hinged rotateX transform make the envelope flap physically fold before the paper rises. |
 | [MDN: dialog](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) | Native showModal provides focus containment and inert background content. Explicit close buttons and Escape are supported. |
 | [GSAP Timeline documentation](https://gsap.com/docs/v3/GSAP/Timeline/) | Reviewed relative sequencing and timeline composition. Motion handles this choreography completely, so GSAP is not installed. |
@@ -106,16 +117,16 @@ npm run typecheck
 npm run build
 ```
 
-The Playwright suite uses installed Google Chrome and Playwright WebKit. To prepare WebKit:
+The Playwright suite uses installed Google Chrome, installed [Mozilla Firefox](https://www.mozilla.org/firefox/), and Playwright WebKit. Firefox uses Playwright's `moz-firefox` WebDriver BiDi channel and isolated profiles with real `ui.prefersReducedMotion` settings. It does not modify the installed browser's personal profile. To prepare WebKit:
 
 ```sh
 npx playwright install webkit
 npm run test:e2e
 ```
 
-If Google Chrome is not installed, install it or remove `channel: "chrome"` from `playwright.config.ts` and run `npx playwright install chromium webkit`. The suite can start its own development server, or reuse localhost:3000.
+If Google Chrome is not installed, install it or remove `channel: "chrome"` from `playwright.config.ts` and run `npx playwright install chromium webkit`. Install regular Mozilla Firefox to run the two Firefox profile projects. The suite can start its own development server, or reuse localhost:3000.
 
-The **20-test matrix** covers Chrome and WebKit at **375×812, 390×844, 430×932, and 1440×1000**, plus Android Pixel 7 and iPhone 13 device profiles, both with normal and reduced motion. The device profiles include mobile viewport behavior, touch, and mobile user agents. It samples actual changing cloud, heart, sparkle, butterfly-flight and wing transforms; checks independent periods/phases and static ambient parents; and verifies flower geometry/pivots, complete illustration bounds, desktop scene size, teddy blinking, hidden letter discovery, native touch activation, the ordered lift/seal/flap/paper sequence, exact letter text, keyboard Space, focus restoration, repeated opening, replay, motion opt-in/out, touch targets, and no horizontal overflow. Screenshots of welcome, growth, bouquet, and letter are saved under `test-results/` when the suite runs. The HTML report is in `playwright-report/`.
+The **52-test matrix** covers Chrome and WebKit at **375×812, 390×844, 430×932, and 1440×1000**, Android Pixel 7 and iPhone 13 device profiles, and Firefox desktop, with normal and reduced motion. The device profiles include mobile viewport behavior, touch, and mobile user agents. It samples actual changing cloud, heart, sparkle, butterfly-flight and wing transforms; checks independent periods/phases and static ambient parents; and verifies flower geometry/pivots, complete illustration bounds, desktop scene size, teddy blinking, hidden letter discovery, native touch activation, the ordered lift/seal/flap/paper sequence, exact letter text, keyboard Space, focus restoration, repeated opening, replay, motion opt-in/out, touch targets, and no horizontal overflow. Preference tests check ON by default, live OS changes, saved ON and OFF across reloads, saved-choice priority, cross-tab updates, and blocked storage. Client bundles are deliberately held during additional Chrome/WebKit reloads to check the correct CSS and toggle label **before hydration**, including an invalid stored value. Two Firefox projects use native normal/reduced preferences to check actual defaults, star movement, flower growth, the hidden letter, replay, and persistence in both directions. Screenshots of welcome, growth, bouquet, and letter are saved under `test-results/` when the suite runs. The HTML report is in `playwright-report/`.
 
 Browser-engine emulation is not a physical iPhone/Android device test. Real-device responsiveness and frame rate should also be checked on the phone used for the gift; no hardware-specific frame-rate guarantee is claimed.
 
@@ -147,6 +158,14 @@ Browser-engine emulation is not a physical iPhone/Android device test. Real-devi
 - Phone and desktop screenshots were inspected. The live in-app preview reported reduced motion enabled, explaining its static appearance. Explicitly enabling Motion restored the independent loops; changing star, heart, flight, and wing transforms were sampled in the running preview. The hidden heart and preserved letter were opened and inspected there too.
 - `.gitignore` exclusions were verified for dependencies, builds, local QA files, reports, and environment files. No generated screenshots or reports are uploaded.
 - Verification uses browser engines and device profiles, not physical phone hardware. No Vercel deployment was performed.
+
+### Persistent motion preference verification — October 18, 2026
+
+- Lint, TypeScript, and the optimized production build passed.
+- **50 Chrome/WebKit production tests passed**, including phone/desktop widths, Android/iPhone profiles, motion defaults, both saved overrides across refreshes, system changes, cross-tab synchronization, invalid stored values, and blocked storage. Held client bundles verified correct labels and CSS before hydration. The original surprise, real petal morphing, hidden letter, focus, and replay flows also passed.
+- **Two native Mozilla Firefox 158 production profile tests passed (16 seconds)**, using actual normal/reduced settings. They verified the reported media preference, automatic star motion, real flower growth, hidden-letter content and controls, replay, and saved ON/OFF overrides across refreshes. Together with the Chrome/WebKit matrix, this verifies all 52 current tests across the two runs.
+- The downloaded Playwright Firefox builds could not start on this Windows installation because of a side-by-side `mozglue` assembly error, even after reinstalling. Installed Firefox works through the supported `moz-firefox` BiDi channel. Its media-emulation limitations are avoided by using real temporary profile settings; no OS setting or personal browser profile was modified.
+- The tested flows reported no application console/runtime errors. A rendered phone welcome screenshot was inspected; artwork and letter source files are unchanged. This is browser/device-profile testing, not physical-phone testing. No Vercel deployment was performed.
 
 ## GitHub repository
 

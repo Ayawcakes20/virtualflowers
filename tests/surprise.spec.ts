@@ -14,6 +14,8 @@ test("surprise stays hidden, genuinely blooms, and opens a replayable letter", a
   const open = page.getByRole("button", { name: "Open My Surprise" });
   await expect(open).toBeVisible();
   await expect(open).toBeEnabled();
+  await expect(page.locator(".experience")).toHaveAttribute("data-motion", "full");
+  await expect(page.getByRole("button", { name:"Reduce animations", exact:true })).toBeVisible();
   await expect(page.getByTestId("bouquet")).toHaveCount(0);
   await expect(page.locator("[data-petal]")).toHaveCount(0);
   await expect(page.getByTestId("open-letter")).toHaveCount(0);

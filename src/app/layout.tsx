@@ -6,6 +6,7 @@ import "@fontsource/cormorant-garamond/500.css";
 import "@fontsource/cormorant-garamond/500-italic.css";
 import "./globals.css";
 import { surprise } from "@/config/surprise";
+import { motionPreferenceScript } from "@/lib/motion-preference";
 
 export const metadata: Metadata = {
   title: surprise.title,
@@ -18,5 +19,6 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  // Only the head script's intentional data attribute differs before hydration.
+  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: motionPreferenceScript }} /></head><body>{children}</body></html>;
 }
